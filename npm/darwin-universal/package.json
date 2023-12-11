@@ -1,0 +1,26 @@
+{
+  "name": "@nevule/sac-tool-darwin-universal",
+  "version": "0.0.0",
+  "os": [
+    "darwin"
+  ],
+  "main": "sac-tool.darwin-universal.node",
+  "files": [
+    "sac-tool.darwin-universal.node"
+  ],
+  "description": "sac project tool",
+  "keywords": [
+    "math",
+    "counter"
+  ],
+  "author": "nevule",
+  "homepage": "https://github.com/fanevule/sac-tool#readme",
+  "license": "MIT",
+  "engines": {
+    "node": ">= 10"
+  },
+  "repository": "https://github.com/fanevule/sac-tool.git",
+  "bugs": {
+    "url": "https://github.com/fanevule/sac-tool/issues"
+  }
+}

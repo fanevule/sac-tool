@@ -1,0 +1,29 @@
+{
+  "name": "@nevule/sac-tool-freebsd-x64",
+  "version": "0.0.0",
+  "os": [
+    "freebsd"
+  ],
+  "cpu": [
+    "x64"
+  ],
+  "main": "sac-tool.freebsd-x64.node",
+  "files": [
+    "sac-tool.freebsd-x64.node"
+  ],
+  "description": "sac project tool",
+  "keywords": [
+    "math",
+    "counter"
+  ],
+  "author": "nevule",
+  "homepage": "https://github.com/fanevule/sac-tool#readme",
+  "license": "MIT",
+  "engines": {
+    "node": ">= 10"
+  },
+  "repository": "https://github.com/fanevule/sac-tool.git",
+  "bugs": {
+    "url": "https://github.com/fanevule/sac-tool/issues"
+  }
+}
