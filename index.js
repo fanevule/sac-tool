@@ -281,6 +281,7 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { sum } = nativeBinding
+const { outliers, coefficientOfVariation } = nativeBinding
 
-module.exports.sum = sum
+module.exports.outliers = outliers
+module.exports.coefficientOfVariation = coefficientOfVariation
