@@ -11,7 +11,8 @@ yarn.lock
 .yarn
 __test__
 renovate.json
-./src/*
+./src/lib.rs
+./src/*.rs
 .yarnrc.yml
 Cargo.toml
 build.rs
