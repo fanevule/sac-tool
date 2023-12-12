@@ -19,6 +19,9 @@ permissions:
       - .editorconfig
       - docs/**
   pull_request: null
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   build:
     strategy:
@@ -52,6 +55,11 @@ jobs:
           - host: macos-latest
             target: aarch64-apple-darwin
             build: |
+              sudo rm -Rf /Library/Developer/CommandLineTools/SDKs/*;
+              export CC=$(xcrun -f clang);
+              export CXX=$(xcrun -f clang++);
+              SYSROOT=$(xcrun --sdk macosx --show-sdk-path);
+              export CFLAGS="-isysroot $SYSROOT -isystem $SYSROOT";
               npm run build --target aarch64-apple-darwin
               strip -x *.node
           - host: ubuntu-latest
@@ -132,6 +140,10 @@ jobs:
         run: ${{ matrix.settings.setup }}
         if: ${{ matrix.settings.setup }}
         shell: bash
+      - name: Setup node x86
+        if: matrix.settings.target == 'i686-pc-windows-msvc'
+        run: yarn config set supportedArchitectures.cpu "ia32"
+        shell: bash
       - name: Install dependencies
         run: npm install
       - name: Setup node x86
@@ -159,13 +171,13 @@ jobs:
           path: ${{ env.APP_NAME }}.*.node
           if-no-files-found: error
   build-freebsd:
-    runs-on: macos-12
+    runs-on: macos-13
     name: Build FreeBSD
     steps:
       - uses: actions/checkout@v4
       - name: Build
         id: build
-        uses: cross-platform-actions/action@v0.21.0
+        uses: cross-platform-actions/action@v0.21.1
         env:
           DEBUG: napi:*
           RUSTUP_IO_THREADS: 1
@@ -174,13 +186,13 @@ jobs:
           version: '13.2'
           memory: 13G
           cpu_count: 3
-          environment_variables: DEBUG RUSTUP_IO_THREADS
+          environment_variables: 'DEBUG RUSTUP_IO_THREADS'
           shell: bash
           run: |
             sudo pkg install -y -f curl node libnghttp2 npm
             sudo npm install -g npm --ignore-scripts
             curl https://sh.rustup.rs -sSf --output rustup.sh
-            sh rustup.sh -y --profile minimal --default-toolchain stable
+            sh rustup.sh -y --profile minimal --default-toolchain beta
             source "$HOME/.cargo/env"
             echo "~~~~ rustc --version ~~~~"
             rustc --version
@@ -195,8 +207,6 @@ jobs:
             freebsd-version
             npm install
             npm run build
-            strip -x *.node
-            npm run test
             rm -rf node_modules
             rm -rf target
             rm -rf .npm/cache
@@ -214,10 +224,10 @@ jobs:
       fail-fast: false
       matrix:
         settings:
-          - host: macos-latest
-            target: x86_64-apple-darwin
           - host: windows-latest
             target: x86_64-pc-windows-msvc
+          - host: macos-latest
+            target: x86_64-apple-darwin
         node:
           - '18'
           - '20'
@@ -344,7 +354,7 @@ jobs:
             npm run test
             ls -la
   test-linux-aarch64-musl-binding:
-    name: Test bindings on aarch64-unknown-linux-musl - node@${{ matrix.node }}
+    name: Test bindings on aarch64-unknown-linux-musl - node@lts
     needs:
       - build
     runs-on: ubuntu-latest
@@ -415,38 +425,6 @@ jobs:
             set -e
             npm run test
             ls -la
-  universal-macOS:
-    name: Build universal macOS binary
-    needs:
-      - build
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18
-          cache: npm
-      - name: Install dependencies
-        run: npm install
-      - name: Download macOS x64 artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: bindings-x86_64-apple-darwin
-          path: artifacts
-      - name: Download macOS arm64 artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: bindings-aarch64-apple-darwin
-          path: artifacts
-      - name: Combine binaries
-        run: npm run universal
-      - name: Upload artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: bindings-universal-apple-darwin
-          path: ${{ env.APP_NAME }}.*.node
-          if-no-files-found: error
   publish:
     name: Publish
     runs-on: ubuntu-latest
@@ -458,7 +436,6 @@ jobs:
       - test-linux-aarch64-gnu-binding
       - test-linux-aarch64-musl-binding
       - test-linux-arm-gnueabihf-binding
-      - universal-macOS
     steps:
       - uses: actions/checkout@v4
       - name: Setup node
@@ -473,7 +450,7 @@ jobs:
         with:
           path: artifacts
       - name: Move artifacts
-        run: npm artifacts
+        run: npm run artifacts
       - name: List packages
         run: ls -R ./npm
         shell: bash
