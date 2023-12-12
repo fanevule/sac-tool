@@ -25,26 +25,7 @@
   "license": "MIT",
   "devDependencies": {
     "@napi-rs/cli": "^2.17.0",
-    "ava": "^5.1.1"
-  },
-  "ava": {
-    "timeout": "3m"
-  },
-  "engines": {
-    "node": ">= 10"
-  },
-  "scripts": {
-    "artifacts": "napi artifacts",
-    "build": "napi build --platform --release",
-    "build:debug": "napi build --platform",
-    "prepublishOnly": "napi prepublish -t npm",
-    "test": "ava",
-    "universal": "napi universal",
-    "version": "napi version"
-  },
-  "packageManager": "yarn@4.0.2",
-  "description": "sac project tool",
-  "dependencies": {
+    "ava": "^5.1.1",
     "acorn": "^8.11.2",
     "acorn-walk": "^8.3.1",
     "aggregate-error": "^4.0.1",
@@ -168,6 +149,23 @@
     "yargs-parser": "^21.1.1",
     "yocto-queue": "^1.0.0"
   },
+  "ava": {
+    "timeout": "3m"
+  },
+  "engines": {
+    "node": ">= 10"
+  },
+  "scripts": {
+    "artifacts": "napi artifacts",
+    "build": "napi build --platform --release",
+    "build:debug": "napi build --platform",
+    "prepublishOnly": "napi prepublish -t npm",
+    "test": "ava",
+    "universal": "napi universal",
+    "version": "napi version"
+  },
+  "packageManager": "yarn@4.0.2",
+  "description": "sac project tool",
   "repository": "https://github.com/fanevule/sac-tool.git",
   "keywords": [
     "math",
