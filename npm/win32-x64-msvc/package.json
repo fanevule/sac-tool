@@ -1,0 +1,29 @@
+{
+  "name": "@nevule/sac-tool-win32-x64-msvc",
+  "version": "0.0.0",
+  "os": [
+    "win32"
+  ],
+  "cpu": [
+    "x64"
+  ],
+  "main": "sac-tool.win32-x64-msvc.node",
+  "files": [
+    "sac-tool.win32-x64-msvc.node"
+  ],
+  "description": "sac project tool",
+  "keywords": [
+    "math",
+    "count"
+  ],
+  "author": "nevule",
+  "homepage": "https://github.com/fanevule/sac-tool#readme",
+  "license": "MIT",
+  "engines": {
+    "node": ">= 10"
+  },
+  "repository": "https://github.com/fanevule/sac-tool.git",
+  "bugs": {
+    "url": "https://github.com/fanevule/sac-tool/issues"
+  }
+}
