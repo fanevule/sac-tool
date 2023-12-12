@@ -4,7 +4,7 @@
 
 `The math tool written in Rust`
 
-`一款基于 Rust 实现的 数据计算工具`
+`一款基于 Rust 实现的 数据计算g`
 
 ## Install
 

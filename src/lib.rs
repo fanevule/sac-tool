@@ -6,6 +6,11 @@ extern crate napi_derive;
 use std::collections::{HashSet, BTreeMap, hash_map::DefaultHasher};
 use std::hash::{Hash, Hasher};
 
+#[napi]
+pub fn sum(a: i32, b: i32) -> i32 {
+  a + b
+}
+
 /**
  * 计算分位数，比如P25，P50，P75
  * eg: quartile(25, [1.0, 2.0, 3.0, 4.0, 5.0]) => 2.0
