@@ -178,7 +178,11 @@ jobs:
         with:
           envs: DEBUG RUSTUP_HOME CARGO_HOME RUSTUP_IO_THREADS
           usesh: true
-          mem: 3000
+          operating_system: freebsd
+          version: '13.2'
+          memory: 13G
+          cpu_count: 3
+          shell: bash
           prepare: |
             pkg install -y -f curl node libnghttp2
             curl -qL https://www.npmjs.com/install.sh | sh
