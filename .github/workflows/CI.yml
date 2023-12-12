@@ -166,26 +166,26 @@ jobs:
     runs-on: macos-12
     name: Build FreeBSD
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
       - name: Build
         id: build
-        uses: cross-platform-actions/action@v0.21.0
+        uses: vmactions/freebsd-vm@v0
         env:
           DEBUG: napi:*
+          RUSTUP_HOME: /usr/local/rustup
+          CARGO_HOME: /usr/local/cargo
           RUSTUP_IO_THREADS: 1
         with:
-          operating_system: freebsd
-          version: '13.2'
-          memory: 13G
-          cpu_count: 3
-          environment_variables: DEBUG RUSTUP_IO_THREADS
-          shell: bash
+          envs: DEBUG RUSTUP_HOME CARGO_HOME RUSTUP_IO_THREADS
+          usesh: true
+          mem: 3000
           prepare: |
-            sudo pkg install -y -f curl node libnghttp2 npm
-            sudo npm install -g yarn --ignore-scripts
+            pkg install -y -f curl node libnghttp2
+            curl -qL https://www.npmjs.com/install.sh | sh
+            npm install --location=global --ignore-scripts yarn
             curl https://sh.rustup.rs -sSf --output rustup.sh
             sh rustup.sh -y --profile minimal --default-toolchain stable
-            source "$HOME/.cargo/env"
+            export PATH="/usr/local/cargo/bin:$PATH"
             echo "~~~~ rustc --version ~~~~"
             rustc --version
             echo "~~~~ node -v ~~~~"
