@@ -179,20 +179,6 @@
   },
   "homepage": "https://github.com/fanevule/sac-tool#readme",
   "optionalDependencies": {
-    "@nevule/sac-tool-win32-x64-msvc": "0.0.1",
-    "@nevule/sac-tool-darwin-x64": "0.0.1",
-    "@nevule/sac-tool-linux-x64-gnu": "0.0.1",
-    "@nevule/sac-tool-darwin-arm64": "0.0.1",
-    "@nevule/sac-tool-android-arm64": "0.0.1",
-    "@nevule/sac-tool-linux-arm64-gnu": "0.0.1",
-    "@nevule/sac-tool-linux-arm64-musl": "0.0.1",
-    "@nevule/sac-tool-win32-arm64-msvc": "0.0.1",
-    "@nevule/sac-tool-linux-arm-gnueabihf": "0.0.1",
-    "@nevule/sac-tool-linux-x64-musl": "0.0.1",
-    "@nevule/sac-tool-freebsd-x64": "0.0.1",
-    "@nevule/sac-tool-win32-ia32-msvc": "0.0.1",
-    "@nevule/sac-tool-android-arm-eabi": "0.0.1",
-    "@nevule/sac-tool-darwin-universal": "0.0.1",
-    "@nevule/sac-tool-linux-riscv64-gnu": "0.0.1"
+    "fsevents": "*"
   }
 }
