@@ -178,5 +178,8 @@
   "bugs": {
     "url": "https://github.com/fanevule/sac-tool/issues"
   },
-  "homepage": "https://github.com/fanevule/sac-tool#readme"
+  "homepage": "https://github.com/fanevule/sac-tool#readme",
+  "optionalDependencies": {
+    "fsevents": "*"
+  }
 }
