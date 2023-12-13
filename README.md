@@ -1,6 +1,6 @@
 # sac-tool
 
-[![license](https://img.shields.io/npm/l/napi-nanoid?color=cyan)](https://revolunet.mit-license.org/) [![npm](https://img.shields.io/npm/v/napi-nanoid?color=orange)](https://www.npmjs.com/package/napi-nanoid)
+[![license](https://img.shields.io/npm/l/@nevule/sac-tool?color=cyan)](https://revolunet.mit-license.org/) [![npm](https://img.shields.io/npm/v/@nevule/sac-tool?color=orange)](https://www.npmjs.com/package/@nevule/sac-tool)
 
 `The math tool written in Rust`
 
