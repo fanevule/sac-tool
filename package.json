@@ -168,8 +168,13 @@
   "description": "sac project tool",
   "repository": "https://github.com/fanevule/sac-tool.git",
   "keywords": [
-    "math",
-    "count"
+    "napi-rs",
+    "NAPI",
+    "N-API",
+    "Rust",
+    "node-addon",
+    "node-addon-api",
+    "math"
   ],
   "author": "nevule",
   "bugs": {

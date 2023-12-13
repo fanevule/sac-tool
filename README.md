@@ -4,20 +4,37 @@
 
 `The math tool written in Rust`
 
-`一款基于 Rust 实现的 数据计算g`
+`一款基于 Rust 实现的 数据计算`
 
 ## Install
 
 ```shell
-$ npm i npm i @nevule/sac-tool
+$ npm i @nevule/sac-tool
 ```
 
 ## Usage
 
 ```js
 import * as sac from '@nevule/sac-tool';
-// 计算离群值
-sac.outliers([1, 2, 3, 4, 3, 1, 2, 4, 10, 15]); // => [10, 15]
+// 获取离群元素
+sac.outliers(new Float64Array([1, 2, 3, 4, 3, 1, 2, 4, 10, 15])); // => [10, 15]
+```
+
+## Test
+```js
+const numbers = (new Array(10000000).fill(1).map(() => Math.random() * 1000000));
+
+console.time('js')
+js.coefficientOfVariation(numbers)
+console.timeEnd('js') // 1.119s
+
+console.time('rust')
+sac.coefficientOfVariation(new Float64Array(numbers))
+console.timeEnd('rust') // 122.788ms
+
+console.time('rust-wasm')
+wasm.coefficientOfVariation(new Float64Array(numbers))
+console.timeEnd('rust-wasm') // 164.442ms
 ```
 
 ## Support matrix
