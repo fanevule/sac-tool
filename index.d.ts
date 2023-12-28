@@ -88,3 +88,15 @@ export function linearCounting(numbers: Int32Array): number
  * 概率计数
 */
 export function probabilisticCounting(numbers: Int32Array): number
+/**
+ * 计算皮尔逊相关系数
+*/
+export function pearson(x: Float64Array, y: Float64Array): number
+/**
+ * 计算斯皮尔曼等级相关系数
+*/
+export function spearmanRankCorrelation(x: Float64Array, y: Float64Array): number
+/**
+ * 计算肯德尔等级相关系数
+*/
+export function kendallTau(x: Float64Array, y: Float64Array): number

@@ -286,3 +286,107 @@ pub fn probabilistic_counting(numbers: Int32Array) -> f64 {
   let m = bitmap.count_ones() as f64;
   2f64.powf(m) / 0.77351  // probabilistic counting estimate
 }
+
+/**
+ * 计算皮尔逊相关系数
+ */
+#[napi]
+pub fn pearson(x: Float64Array, y: Float64Array) -> f64 {
+  let n = x.len() as f64;
+  let mut sum_x = 0.0;
+  let mut sum_y = 0.0;
+  let mut sum_xy = 0.0;
+  let mut sum_x2 = 0.0;
+  let mut sum_y2 = 0.0;
+  for i in 0..x.len() {
+      sum_x += x[i];
+      sum_y += y[i];
+      sum_xy += x[i] * y[i];
+      sum_x2 += x[i] * x[i];
+      sum_y2 += y[i] * y[i];
+  }
+  let molecule = sum_xy - (sum_x * sum_y) / n;
+  let denominator = ((sum_x2 - (sum_x * sum_x) / n) * (sum_y2 - (sum_y * sum_y) / n)).sqrt();
+  molecule / denominator
+}
+
+/**
+ * 计算斯皮尔曼等级相关系数
+ */
+#[napi]
+pub fn spearman_rank_correlation(x: Float64Array, y: Float64Array) -> f64 {
+  assert_eq!(x.len(), y.len());
+  let n = x.len() as f64;
+
+  let rank_x = rank(&x);
+  let rank_y = rank(&y);
+
+  let diff: Vec<_> = rank_x.iter().zip(rank_y.iter()).map(|(a, b)| a - b).collect();
+  let diff_sq_sum: f64 = diff.iter().map(|d| d * d).sum();
+
+  1.0 - 6.0 * diff_sq_sum / (n * (n * n - 1.0))
+}
+
+fn rank(data: &[f64]) -> Vec<f64> {
+  let mut rank_data: Vec<_> = data.iter().enumerate().collect();
+  rank_data.sort_by(|a, b| a.1.partial_cmp(b.1).unwrap());
+
+  let mut rank = vec![0.0; data.len()];
+  for (i, &(idx, _)) in rank_data.iter().enumerate() {
+      rank[idx] = i as f64 + 1.0;
+  }
+  rank
+}
+
+/**
+ * 计算肯德尔等级相关系数
+ */
+#[napi]
+pub fn kendall_tau(x: Float64Array, y: Float64Array) -> f64 {
+  assert_eq!(x.len(), y.len());
+  let n = x.len();
+
+  let mut concordant = 0;
+  let mut discordant = 0;
+
+  for i in 0..n {
+      for j in (i+1)..n {
+          let xi_xj = x[i] - x[j];
+          let yi_yj = y[i] - y[j];
+
+          let pair = xi_xj * yi_yj;
+
+          if pair > 0.0 {
+              concordant += 1;
+          } else if pair < 0.0 {
+              discordant += 1;
+          }
+      }
+  }
+
+  (concordant as f64 - discordant as f64) / ((n * (n - 1)) / 2) as f64
+}
+
+/**
+ * 计算点双序列相关系数
+ */
+pub fn point_biserial_correlation(x: &[f64], y: &[bool]) -> f64 {
+  assert_eq!(x.len(), y.len());
+  let n = x.len() as f64;
+
+  let mean_x = x.iter().sum::<f64>() / n;
+  let mean_y = y.iter().map(|&v| if v {1.0} else {0.0}).sum::<f64>() / n;
+
+  let mut sum_x = 0.0;
+  let mut sum_y = 0.0;
+
+  for i in 0..x.len() {
+      let xi = x[i];
+      let yi = if y[i] {1.0} else {0.0};
+
+      sum_x += (xi - mean_x).powi(2);
+      sum_y += (yi - mean_y) * (xi - mean_x);
+  }
+
+  sum_y / ((n - 1.0) * sum_x.sqrt())
+}
