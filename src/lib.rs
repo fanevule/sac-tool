@@ -5,8 +5,12 @@ extern crate napi_derive;
 
 use std::collections::{HashSet, BTreeMap, hash_map::DefaultHasher};
 use std::hash::{Hash, Hasher};
-
-use napi::bindgen_prelude::{Float64Array, Int32Array};
+use napi::{
+  bindgen_prelude::*,
+  threadsafe_function::{ErrorStrategy, ThreadsafeFunction, ThreadsafeFunctionCallMode, ThreadSafeCallContext},
+};
+use std::sync::{Arc, Mutex};
+use std::time::{Duration, Instant};
 
 /**
  * 求和
@@ -389,4 +393,82 @@ pub fn point_biserial_correlation(x: &[f64], y: &[bool]) -> f64 {
   }
 
   sum_y / ((n - 1.0) * sum_x.sqrt())
+}
+
+#[napi]
+#[allow(dead_code)]
+struct Report {
+  task: tokio::runtime::Runtime,
+  tree: Arc<Mutex<BTreeMap<String, BTreeMap<String, u32>>>>,
+}
+
+#[napi]
+impl Report {
+  #[napi(constructor)]
+  #[allow(dead_code)]
+  pub fn new() -> Self {
+    Report {
+      task: tokio::runtime::Builder::new_multi_thread().enable_all().build().unwrap(),
+      tree: Arc::new(Mutex::new(BTreeMap::new())),
+    }
+  }
+
+  #[napi]
+  #[allow(dead_code)]
+  pub fn incr(&self, code: String, key: String) {
+    let tree = Arc::clone(&self.tree);
+    self.task.spawn(async move {
+      let mut tree = tree.lock().unwrap();
+      let code_map = tree.entry(code).or_default();
+      code_map.entry(key).and_modify(|v| *v += 1).or_insert(1);
+    });
+  }
+
+  /**
+   * @param secs 间隔时间（秒）
+   * @param callback 回调函数
+   */
+  #[napi(js_name = "loop", ts_args_type = "secs: number, callback: (err, result: { code: string, data: { [key: string]: number } }) => void")]
+  #[allow(dead_code)]
+  pub fn call(&self, secs: i32, callback: napi::JsFunction)  -> Result<()> {
+    let tsfn: ThreadsafeFunction<Arc<Mutex<BTreeMap<String, BTreeMap<String, u32>>>>, ErrorStrategy::CalleeHandled> = callback
+      .create_threadsafe_function(0, |ctx: ThreadSafeCallContext<Arc<Mutex<BTreeMap<String, BTreeMap<String, u32>>>>>| {
+        let mut map = ctx.value.lock().unwrap();
+        let mut obj = ctx.env.create_object()?;
+        loop {
+          match map.pop_first() {
+            Some((code, map)) => {
+              let mut data = ctx.env.create_object()?;
+              for (key, val) in map.iter() {
+                data.set_named_property(key, ctx.env.create_uint32(*val)?)?;
+              }
+              obj.set_named_property(&code, data)?;
+            }
+            None => break
+          }
+        }
+        Ok(vec![obj])
+      })?;
+    let tree = Arc::clone(&self.tree);
+    self.task.spawn(async move {
+      let mut last_instant = Instant::now();
+      loop {
+          let len = tree.lock().unwrap().len();
+          if len > 0 {
+            tsfn.call(Ok(Arc::clone(&tree)), ThreadsafeFunctionCallMode::NonBlocking);
+          }
+          let now = Instant::now();
+          let elapsed = now.duration_since(last_instant);
+          let secs = Duration::from_secs(secs as u64);
+          let sleep_duration = if elapsed >= secs {
+            Duration::from_secs(0)
+          } else {
+            secs - elapsed
+          };
+          tokio::time::sleep(sleep_duration).await;
+          last_instant = now + sleep_duration;
+      }
+    });
+    Ok(())
+  }
 }

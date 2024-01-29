@@ -100,3 +100,12 @@ export function spearmanRankCorrelation(x: Float64Array, y: Float64Array): numbe
  * 计算肯德尔等级相关系数
 */
 export function kendallTau(x: Float64Array, y: Float64Array): number
+export class Report {
+  constructor()
+  incr(code: string, key: string): void
+  /**
+  * @param secs 间隔时间（秒）
+  * @param callback 回调函数
+  */
+  loop(secs: number, callback: (err, result: { code: string, data: { [key: string]: number } }) => void): void
+}
