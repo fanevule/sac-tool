@@ -395,6 +395,15 @@ pub fn point_biserial_correlation(x: &[f64], y: &[bool]) -> f64 {
   sum_y / ((n - 1.0) * sum_x.sqrt())
 }
 
+/**
+ * 获取时间戳
+ */
+fn get_timestamp() -> String {
+  let now = std::time::SystemTime::now();
+  let duration = now.duration_since(std::time::UNIX_EPOCH).unwrap();
+  duration.as_secs().to_string()
+}
+
 #[napi]
 #[allow(dead_code)]
 struct Report {
@@ -413,9 +422,28 @@ impl Report {
     }
   }
 
+  /**
+   * 求和
+   */
   #[napi]
   #[allow(dead_code)]
-  pub fn incr(&self, code: String, key: String) {
+  pub fn avg(&self, code: String, num: u32) {
+    let key = get_timestamp();
+    let tree = Arc::clone(&self.tree);
+    self.task.spawn(async move {
+      let mut tree = tree.lock().unwrap();
+      let code_map = tree.entry(code).or_default();
+      code_map.entry(key).and_modify(|v| *v = (*v + num) / 2).or_insert(num);
+    });
+  }
+
+  /**
+   * 计数
+   */
+  #[napi]
+  #[allow(dead_code)]
+  pub fn incr(&self, code: String) {
+    let key = get_timestamp();
     let tree = Arc::clone(&self.tree);
     self.task.spawn(async move {
       let mut tree = tree.lock().unwrap();
@@ -426,11 +454,11 @@ impl Report {
 
   /**
    * @param secs 间隔时间（秒）
-   * @param callback 回调函数
+   * @param callback 回调函数 (data的key是unix时间戳，value是code对应的数据)
    */
   #[napi(js_name = "loop", ts_args_type = "secs: number, callback: (err, result: { code: string, data: { [key: string]: number } }) => void")]
   #[allow(dead_code)]
-  pub fn call(&self, secs: i32, callback: napi::JsFunction)  -> Result<()> {
+  pub fn call(&self, secs: u32, callback: napi::JsFunction) -> Result<()> {
     let tsfn: ThreadsafeFunction<Arc<Mutex<BTreeMap<String, BTreeMap<String, u32>>>>, ErrorStrategy::CalleeHandled> = callback
       .create_threadsafe_function(0, |ctx: ThreadSafeCallContext<Arc<Mutex<BTreeMap<String, BTreeMap<String, u32>>>>>| {
         let mut map = ctx.value.lock().unwrap();

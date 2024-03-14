@@ -102,10 +102,17 @@ export function spearmanRankCorrelation(x: Float64Array, y: Float64Array): numbe
 export function kendallTau(x: Float64Array, y: Float64Array): number
 export class Report {
   constructor()
-  incr(code: string, key: string): void
+  /**
+  * 求和
+  */
+  avg(code: string, num: number): void
+  /**
+  * 计数
+  */
+  incr(code: string): void
   /**
   * @param secs 间隔时间（秒）
-  * @param callback 回调函数
+  * @param callback 回调函数 (data的key是unix时间戳，value是code对应的数据)
   */
   loop(secs: number, callback: (err, result: { code: string, data: { [key: string]: number } }) => void): void
 }
