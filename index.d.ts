@@ -77,6 +77,12 @@ export function standardDeviation(numbers: Float64Array): number
 */
 export function outliers(numbers: Float64Array): Array<number>
 /**
+ * 离群分组
+ * 返回大于离群值的数组和小于离群值的数组还有中间的数组
+ * return [lower, middle, upper]
+*/
+export function outliersGroup(numbers: Float64Array): Array<Array<number>>
+/**
  * 计算变异系数
 */
 export function coefficientOfVariation(numbers: Float64Array): number

@@ -238,6 +238,36 @@ pub fn outliers(numbers: Float64Array) -> Vec<f64> {
   sorted_numbers.to_vec().into_iter().filter(|&num| num < lower_bound || num > upper_bound).collect()
 }
 
+
+/**
+ * 离群分组
+ * 返回大于离群值的数组和小于离群值的数组还有中间的数组
+ * return [lower, middle, upper]
+ */
+#[napi]
+pub fn outliers_group(numbers: Float64Array) -> Vec<Vec<f64>> {
+  let mut sorted_numbers = numbers.clone();
+  sorted_numbers.sort_by(|a, b| a.partial_cmp(b).unwrap()); // 排序，使得最小的数在前
+  let q1 = quartile_sorted(25, &sorted_numbers);
+  let q3 = quartile_sorted(75, &sorted_numbers);
+  let iqr = q3 - q1;
+  let lower_bound = q1 - 1.5 * iqr;
+  let upper_bound = q3 + 1.5 * iqr;
+  let mut lower = vec![];
+  let mut middle = vec![];
+  let mut upper = vec![];
+  for &num in sorted_numbers.iter() {
+    if num < lower_bound {
+      lower.push(num);
+    } else if num > upper_bound {
+      upper.push(num);
+    } else {
+      middle.push(num);
+    }
+  }
+  vec![lower, middle, upper]
+}
+
 /**
  * 计算变异系数
  */
