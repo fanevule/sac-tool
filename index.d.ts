@@ -122,3 +122,31 @@ export class Report {
   */
   loop(secs: number, callback: (err, result: { code: string, data: { [key: string]: number } }) => void): void
 }
+export class Calculate {
+  constructor()
+  sum(a: number, b: number): Promise<number>
+  remainder(a: number, b: number): Promise<number>
+  subtract(a: number, b: number): Promise<number>
+  multiply(a: number, b: number): Promise<number>
+  divide(a: number, b: number): Promise<number>
+  mean(numbers: Float64Array): Promise<number>
+  median(numbers: Float64Array): Promise<number>
+  mode(numbers: Int32Array): Promise<number>
+  max(numbers: Float64Array): Promise<number>
+  min(numbers: Float64Array): Promise<number>
+  range(numbers: Float64Array): Promise<number>
+  interquartileRange(numbers: Float64Array): Promise<number>
+  fibonacci(n: number): Promise<number>
+  quartile(p: number, numbers: Float64Array): Promise<number>
+  quartiles(numbers: Float64Array): Promise<number[]>
+  variance(numbers: Float64Array): Promise<number>
+  standardDeviation(numbers: Float64Array): Promise<number>
+  outliers(numbers: Float64Array): Promise<Array<number>>
+  outliersGroup(numbers: Float64Array): Promise<Array<Array<number>>>
+  coefficientOfVariation(numbers: Float64Array): Promise<number>
+  linearCounting(numbers: Int32Array): Promise<number>
+  probabilisticCounting(numbers: Int32Array): Promise<number>
+  pearson(x: Float64Array, y: Float64Array): Promise<number>
+  spearmanRankCorrelation(x: Float64Array, y: Float64Array): Promise<number>
+  kendallTau(x: Float64Array, y: Float64Array): Promise<number>
+}

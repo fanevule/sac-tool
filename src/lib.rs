@@ -441,6 +441,362 @@ struct Report {
   tree: Arc<Mutex<BTreeMap<String, BTreeMap<String, u32>>>>,
 }
 
+
+#[napi]
+#[allow(dead_code)]
+struct Calculate {
+  task: tokio::runtime::Runtime,
+}
+
+#[napi]
+impl Calculate {
+  #[napi(constructor)]
+  #[allow(dead_code)]
+  pub fn new() -> Self {
+    Calculate {
+      task: tokio::runtime::Builder::new_multi_thread().enable_all().build().unwrap(),
+    }
+  }
+
+  #[napi]
+  #[allow(dead_code)]
+  pub async fn sum(&self, a: i32, b: i32) -> i32 {
+    self.task.spawn(async move {
+      a + b
+    }).await.unwrap()
+  }
+
+  #[napi]
+  #[allow(dead_code)]
+  pub async fn remainder(&self, a: i32, b: i32) -> i32 {
+    self.task.spawn(async move {
+      a % b
+    }).await.unwrap()
+  }
+
+  #[napi]
+  #[allow(dead_code)]
+  pub async fn subtract(&self, a: i32, b: i32) -> i32 {
+    self.task.spawn(async move {
+      a - b
+    }).await.unwrap()
+  }
+
+  #[napi]
+  #[allow(dead_code)]
+  pub async fn multiply(&self, a: i32, b: i32) -> i32 {
+    self.task.spawn(async move {
+      a * b
+    }).await.unwrap()
+  }
+
+  #[napi]
+  #[allow(dead_code)]
+  pub async fn divide(&self, a: i32, b: i32) -> i32 {
+    self.task.spawn(async move {
+      a / b
+    }).await.unwrap()
+  }
+
+  #[napi]
+  #[allow(dead_code)]
+  pub async fn mean(&self, numbers: Float64Array) -> f64 {
+    self.task.spawn(async move {
+      numbers.iter().sum::<f64>() / numbers.len() as f64
+    }).await.unwrap()
+  }
+
+  #[napi]
+  #[allow(dead_code)]
+  pub async fn median(&self, numbers: Float64Array) -> f64 {
+    self.task.spawn(async move {
+      let mut sorted_numbers = numbers;
+      sorted_numbers.sort_by(|a, b| a.partial_cmp(b).unwrap()); // 排序，使得最小的数在前
+      let mid = sorted_numbers.len() / 2;
+      if sorted_numbers.len() % 2 == 0 {
+        (sorted_numbers[mid] + sorted_numbers[mid - 1]) / 2.0
+      } else {
+        sorted_numbers[mid]
+      }
+    }).await.unwrap()
+  }
+
+  #[napi]
+  #[allow(dead_code)]
+  pub async fn mode(&self, numbers: Int32Array) -> i32 {
+    self.task.spawn(async move {
+      let mut counts = BTreeMap::new();
+      for &num in numbers[0..].iter() {
+        *counts.entry(num).or_insert(0) += 1;
+      }
+      let mut max = 0;
+      let mut mode = 0;
+      for (&num, &count) in counts.iter() {
+        if count > max {
+          max = count;
+          mode = num;
+        }
+      }
+      mode
+    }).await.unwrap()
+  }
+
+  #[napi(js_name = "max")]
+  #[allow(dead_code)]
+  pub async fn max(&self, numbers: Float64Array) -> f64 {
+    self.task.spawn(async move {
+      let mut max = numbers[0];
+      for &num in numbers[0..].iter() {
+        if num > max {
+          max = num;
+        }
+      }
+      max
+    }).await.unwrap()
+  }
+
+  #[napi(js_name = "min")]
+  #[allow(dead_code)]
+  pub async fn min(&self, numbers: Float64Array) -> f64 {
+    self.task.spawn(async move {
+      let mut min = numbers[0];
+      for &num in numbers[0..].iter() {
+        if num < min {
+          min = num;
+        }
+      }
+      min
+    }).await.unwrap()
+  }
+
+  #[napi(js_name = "range")]
+  #[allow(dead_code)]
+  pub async fn range(&self, numbers: Float64Array) -> f64 {
+    self.task.spawn(async move {
+      max(&numbers) - min(&numbers)
+    }).await.unwrap()
+  }
+
+  #[napi]
+  #[allow(dead_code)]
+  pub async fn interquartile_range(&self, numbers: Float64Array) -> f64 {
+    self.task.spawn(async move {
+      let mut sorted_numbers = numbers;
+      sorted_numbers.sort_by(|a, b| a.partial_cmp(b).unwrap()); // 排序，使得最小的数在前
+      let q1 = quartile_sorted(25, &sorted_numbers);
+      let q3 = quartile_sorted(75, &sorted_numbers);
+      q3 - q1
+    }).await.unwrap()
+  }
+
+  #[napi]
+  #[allow(dead_code)]
+  pub async fn fibonacci(&self, n: u32) -> u32 {
+    self.task.spawn(async move {
+      match n {
+        1 | 2 => 1,
+        _ => fibonacci(n - 1) + fibonacci(n - 2),
+      }
+    }).await.unwrap()
+  }
+
+  #[napi]
+  #[allow(dead_code)]
+  pub async fn quartile(&self, p: i32, numbers: Float64Array) -> f64 {
+    self.task.spawn(async move {
+      let mut sorted_numbers = numbers;
+      sorted_numbers.sort_by(|a, b| a.partial_cmp(b).unwrap()); // 排序，使得最小的数在前
+      quartile_sorted(p, &sorted_numbers)
+    }).await.unwrap()
+  }
+
+  #[napi]
+  #[allow(dead_code)]
+  pub async fn quartiles(&self, numbers: Float64Array) -> [f64; 3] {
+    self.task.spawn(async move {
+      let mut sorted_numbers = numbers.clone();
+      sorted_numbers.sort_by(|a, b| a.partial_cmp(b).unwrap()); // 排序，使得最小的数在前
+      let q1 = quartile_sorted(25, &sorted_numbers);
+      let q2 = quartile_sorted(50, &sorted_numbers);
+      let q3 = quartile_sorted(75, &sorted_numbers);
+      [q1, q2, q3]
+    }).await.unwrap()
+  }
+
+  #[napi]
+  #[allow(dead_code)]
+  pub async fn variance(&self, numbers: Float64Array) -> f64 {
+    self.task.spawn(async move {
+      let mean = numbers.iter().sum::<f64>() / numbers.len() as f64;
+      let variance = numbers.iter().map(|&num| {
+          let deviation = num - mean;
+          deviation * deviation  // square of deviation
+      }).sum::<f64>() / numbers.len() as f64;
+      variance
+    }).await.unwrap()
+  }
+
+  #[napi]
+  #[allow(dead_code)]
+  pub async fn standard_deviation(&self, numbers: Float64Array) -> f64 {
+    self.task.spawn(async move {
+      variance(numbers).sqrt()
+    }).await.unwrap()
+  }
+
+  #[napi]
+  #[allow(dead_code)]
+  pub async fn outliers(&self, numbers: Float64Array) -> Vec<f64> {
+    self.task.spawn(async move {
+      let mut sorted_numbers = numbers.clone();
+      sorted_numbers.sort_by(|a, b| a.partial_cmp(b).unwrap()); // 排序，使得最小的数在前
+      let q1 = quartile_sorted(25, &sorted_numbers);
+      let q3 = quartile_sorted(75, &sorted_numbers);
+      let iqr = q3 - q1;
+      let lower_bound = q1 - 1.5 * iqr;
+      let upper_bound = q3 + 1.5 * iqr;
+      sorted_numbers.to_vec().into_iter().filter(|&num| num < lower_bound || num > upper_bound).collect()
+    }).await.unwrap()
+  }
+  
+  #[napi]
+  #[allow(dead_code)]
+  pub async fn outliers_group(&self, numbers: Float64Array) -> Vec<Vec<f64>> {
+    self.task.spawn(async move {
+      let mut sorted_numbers = numbers.clone();
+      sorted_numbers.sort_by(|a, b| a.partial_cmp(b).unwrap()); // 排序，使得最小的数在前
+      let q1 = quartile_sorted(25, &sorted_numbers);
+      let q3 = quartile_sorted(75, &sorted_numbers);
+      let iqr = q3 - q1;
+      let lower_bound = q1 - 1.5 * iqr;
+      let upper_bound = q3 + 1.5 * iqr;
+      let mut lower = vec![];
+      let mut middle = vec![];
+      let mut upper = vec![];
+      for &num in sorted_numbers.iter() {
+        if num < lower_bound {
+          lower.push(num);
+        } else if num > upper_bound {
+          upper.push(num);
+        } else {
+          middle.push(num);
+        }
+      }
+      vec![lower, middle, upper]
+    }).await.unwrap()
+  }
+
+  #[napi]
+  #[allow(dead_code)]
+  pub async fn coefficient_of_variation(&self, numbers: Float64Array) -> f64 {
+    self.task.spawn(async move {
+      let mean = numbers.iter().sum::<f64>() / numbers.len() as f64;
+      let variance = numbers.iter().map(|&num| {
+          let deviation = num - mean;
+          deviation * deviation  // square of deviation
+      }).sum::<f64>() / numbers.len() as f64;
+      let standard_deviation = variance.sqrt();
+      (standard_deviation / mean).abs() * 100.0  // CV as a percentage
+    }).await.unwrap()
+  }
+
+  #[napi]
+  #[allow(dead_code)]
+  pub async fn linear_counting(&self, numbers: Int32Array) -> f64 {
+    self.task.spawn(async move {
+      let n = numbers.len() as f64;  // total number of elements
+      let m: f64 = numbers.iter().collect::<HashSet<_>>().len() as f64;  // number of unique elements
+      n * (-((1.0 - m / n).ln()))  // linear counting estimate
+    }).await.unwrap()
+  }
+
+  #[napi]
+  #[allow(dead_code)]
+  pub async fn probabilistic_counting(&self, numbers: Int32Array) -> f64 {
+    self.task.spawn(async move {
+      let mut bitmap: u64 = 0;
+      for &num in numbers[0..].iter() {
+          let mut hasher = DefaultHasher::new();
+          num.hash(&mut hasher);
+          let hash = hasher.finish();
+          let bit_index = hash.trailing_zeros() as u64;
+          bitmap |= 1 << bit_index;
+      }
+      let m = bitmap.count_ones() as f64;
+      2f64.powf(m) / 0.77351  // probabilistic counting estimate
+    }).await.unwrap()
+  }
+
+  #[napi]
+  #[allow(dead_code)]
+  pub async fn pearson(&self, x: Float64Array, y: Float64Array) -> f64 {
+    self.task.spawn(async move {
+      let n = x.len() as f64;
+      let mut sum_x = 0.0;
+      let mut sum_y = 0.0;
+      let mut sum_xy = 0.0;
+      let mut sum_x2 = 0.0;
+      let mut sum_y2 = 0.0;
+      for i in 0..x.len() {
+          sum_x += x[i];
+          sum_y += y[i];
+          sum_xy += x[i] * y[i];
+          sum_x2 += x[i] * x[i];
+          sum_y2 += y[i] * y[i];
+      }
+      let molecule = sum_xy - (sum_x * sum_y) / n;
+      let denominator = ((sum_x2 - (sum_x * sum_x) / n) * (sum_y2 - (sum_y * sum_y) / n)).sqrt();
+      molecule / denominator
+    }).await.unwrap()
+  }
+
+  #[napi]
+  #[allow(dead_code)]
+  pub async fn spearman_rank_correlation(&self, x: Float64Array, y: Float64Array) -> f64 {
+    self.task.spawn(async move {
+      assert_eq!(x.len(), y.len());
+      let n = x.len() as f64;
+
+      let rank_x = rank(&x);
+      let rank_y = rank(&y);
+
+      let diff: Vec<_> = rank_x.iter().zip(rank_y.iter()).map(|(a, b)| a - b).collect();
+      let diff_sq_sum: f64 = diff.iter().map(|d| d * d).sum();
+
+      1.0 - 6.0 * diff_sq_sum / (n * (n * n - 1.0))
+    }).await.unwrap()
+  }
+
+  #[napi]
+  #[allow(dead_code)]
+  pub async fn kendall_tau(&self, x: Float64Array, y: Float64Array) -> f64 {
+    self.task.spawn(async move {
+      assert_eq!(x.len(), y.len());
+      let n = x.len();
+
+      let mut concordant = 0;
+      let mut discordant = 0;
+
+      for i in 0..n {
+          for j in (i+1)..n {
+              let xi_xj = x[i] - x[j];
+              let yi_yj = y[i] - y[j];
+
+              let pair = xi_xj * yi_yj;
+
+              if pair > 0.0 {
+                  concordant += 1;
+              } else if pair < 0.0 {
+                  discordant += 1;
+              }
+          }
+      }
+
+      (concordant as f64 - discordant as f64) / ((n * (n - 1)) / 2) as f64
+    }).await.unwrap()
+  }
+}
+
 #[napi]
 impl Report {
   #[napi(constructor)]
