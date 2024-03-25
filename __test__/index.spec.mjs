@@ -1,6 +1,6 @@
 import test from 'ava'
 
-import { Report, Calculate } from '../index.js'
+import { Report, Calculate, sum } from '../index.js'
 
 const report = new Report()
 const math = new Calculate()
@@ -9,9 +9,9 @@ report.loop(1, (err, result) => {
   console.log(err, result)
 });
 
-test('sum', async (t) => {
+test('sum', (t) => {
   report.avg('b', 100)
-  t.is(await math.sum(1, 2), 3)
+  t.is(sum(1, 2), 3)
 })
 
 test('quartile', async (t) => {

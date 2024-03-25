@@ -281,7 +281,7 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { sum, remainder, subtract, multiply, divide, mean, median, mode, max, min, range, interquartileRange, fibonacci, quartile, quartiles, variance, standardDeviation, outliers, outliersGroup, coefficientOfVariation, linearCounting, probabilisticCounting, pearson, spearmanRankCorrelation, kendallTau, Report, Calculate } = nativeBinding
+const { sum, remainder, subtract, multiply, divide, mean, median, mode, max, min, range, interquartileRange, fibonacci, quartile, quartiles, variance, standardDeviation, outliers, outliersGroup, coefficientOfVariation, linearCounting, probabilisticCounting, pearson, spearmanRankCorrelation, kendallTau, Calculate, Report } = nativeBinding
 
 module.exports.sum = sum
 module.exports.remainder = remainder
@@ -308,5 +308,5 @@ module.exports.probabilisticCounting = probabilisticCounting
 module.exports.pearson = pearson
 module.exports.spearmanRankCorrelation = spearmanRankCorrelation
 module.exports.kendallTau = kendallTau
-module.exports.Report = Report
 module.exports.Calculate = Calculate
+module.exports.Report = Report

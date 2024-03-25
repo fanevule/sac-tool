@@ -11,6 +11,14 @@ use napi::{
 };
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
+use lazy_static::lazy_static;
+
+lazy_static! {
+  static ref TASK: tokio::runtime::Runtime = tokio::runtime::Builder::new_multi_thread()
+    .enable_all()
+    .build()
+    .unwrap();
+}
 
 /**
  * 求和
@@ -436,16 +444,8 @@ fn get_timestamp() -> String {
 
 #[napi]
 #[allow(dead_code)]
-struct Report {
-  task: tokio::runtime::Runtime,
-  tree: Arc<Mutex<BTreeMap<String, BTreeMap<String, u32>>>>,
-}
-
-
-#[napi]
-#[allow(dead_code)]
 struct Calculate {
-  task: tokio::runtime::Runtime,
+  task: &'static tokio::runtime::Runtime,
 }
 
 #[napi]
@@ -454,7 +454,7 @@ impl Calculate {
   #[allow(dead_code)]
   pub fn new() -> Self {
     Calculate {
-      task: tokio::runtime::Builder::new_multi_thread().enable_all().build().unwrap(),
+      task: &*TASK,
     }
   }
 
@@ -798,12 +798,19 @@ impl Calculate {
 }
 
 #[napi]
+#[allow(dead_code)]
+struct Report {
+  task: &'static tokio::runtime::Runtime,
+  tree: Arc<Mutex<BTreeMap<String, BTreeMap<String, u32>>>>,
+}
+
+#[napi]
 impl Report {
   #[napi(constructor)]
   #[allow(dead_code)]
   pub fn new() -> Self {
     Report {
-      task: tokio::runtime::Builder::new_multi_thread().enable_all().build().unwrap(),
+      task: &*TASK,
       tree: Arc::new(Mutex::new(BTreeMap::new())),
     }
   }
@@ -842,7 +849,7 @@ impl Report {
    * @param secs 间隔时间（秒）
    * @param callback 回调函数 (data的key是unix时间戳，value是code对应的数据)
    */
-  #[napi(js_name = "loop", ts_args_type = "secs: number, callback: (err, result: { code: string, data: { [key: string]: number } }) => void")]
+  #[napi(js_name = "loop", ts_args_type = "secs: number, callback: (err, result: { [code: string]: { [unix_timestamp: string]: number } }) => void")]
   #[allow(dead_code)]
   pub fn call(&self, secs: u32, callback: napi::JsFunction) -> Result<()> {
     let tsfn: ThreadsafeFunction<Arc<Mutex<BTreeMap<String, BTreeMap<String, u32>>>>, ErrorStrategy::CalleeHandled> = callback

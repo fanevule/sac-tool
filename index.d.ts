@@ -106,22 +106,6 @@ export function spearmanRankCorrelation(x: Float64Array, y: Float64Array): numbe
  * 计算肯德尔等级相关系数
 */
 export function kendallTau(x: Float64Array, y: Float64Array): number
-export class Report {
-  constructor()
-  /**
-  * 求和
-  */
-  avg(code: string, num: number): void
-  /**
-  * 计数
-  */
-  incr(code: string): void
-  /**
-  * @param secs 间隔时间（秒）
-  * @param callback 回调函数 (data的key是unix时间戳，value是code对应的数据)
-  */
-  loop(secs: number, callback: (err, result: { code: string, data: { [key: string]: number } }) => void): void
-}
 export class Calculate {
   constructor()
   sum(a: number, b: number): Promise<number>
@@ -149,4 +133,20 @@ export class Calculate {
   pearson(x: Float64Array, y: Float64Array): Promise<number>
   spearmanRankCorrelation(x: Float64Array, y: Float64Array): Promise<number>
   kendallTau(x: Float64Array, y: Float64Array): Promise<number>
+}
+export class Report {
+  constructor()
+  /**
+  * 求和
+  */
+  avg(code: string, num: number): void
+  /**
+  * 计数
+  */
+  incr(code: string): void
+  /**
+  * @param secs 间隔时间（秒）
+  * @param callback 回调函数 (data的key是unix时间戳，value是code对应的数据)
+  */
+  loop(secs: number, callback: (err, result: { [code: string]: { [unix_timestamp: string]: number } }) => void): void
 }

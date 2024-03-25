@@ -18,9 +18,15 @@ $ npm i @nevule/sac-tool
 import * as sac from '@nevule/sac-tool';
 // 获取离群元素
 sac.outliers(new Float64Array([1, 2, 3, 4, 3, 1, 2, 4, 10, 15])); // => [10, 15]
+
+// Promise版本
+import { Calculate } from '@nevule/sac-tool';
+const sac = new Calculate();
+await sac.outliers(new Float64Array([1, 2, 3, 4, 3, 1, 2, 4, 10, 15])); // => Promise<[10, 15]>
 ```
 
 ## Test
+
 ```js
 const numbers = (new Array(10000000).fill(1).map(() => Math.random() * 1000000));
 
