@@ -1,6 +1,6 @@
 {
   "name": "@nevule/sac-tool-darwin-arm64",
-  "version": "0.0.15",
+  "version": "0.0.16",
   "os": [
     "darwin"
   ],
